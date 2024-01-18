@@ -27,12 +27,10 @@ void Right_Sonar_Callback(const sensor_msgs::Range::ConstPtr& msg)
   printf("Right_Sonar Range: [%f]\n\n", right_sonar);
 }
 
-void PID_wall_following(geometry_msgs::Twist &cmd_vel)
+geometry_msgs::Twist PID_wall_following(double Kp, double Ki, double Kd)
 {
-  double Kp = 0.8;
-  double Ki = 0.0;
-  double Kd = 0.8;
-  
+  geometry_msgs::Twist cmd_vel;
+
   double error = left_sonar - right_sonar;
   double error_d = error - error_old;  
   double error_sum = 0.0;
@@ -51,15 +49,14 @@ void PID_wall_following(geometry_msgs::Twist &cmd_vel)
     cmd_vel.angular.z = steering_control;
   }
 
-  error_old = error; 
+  error_old = error;
+  
+  return cmd_vel;
 }
-
 
 int main(int argc, char **argv)
 {
   int count = 0;
-  
-  geometry_msgs::Twist cmd_vel;
   
   ros::init(argc, argv, "wall_following");
   ros::NodeHandle n;
@@ -72,9 +69,13 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(30.0);  
   
+  double Kp = 0.8;
+  double Ki = 0.0;
+  double Kd = 0.8;
+
   while (ros::ok())
   {
-    PID_wall_following(cmd_vel);
+    geometry_msgs::Twist cmd_vel = PID_wall_following(Kp, Ki, Kd);
     sonar_cmd_vel_pub.publish(cmd_vel);
     ros::spinOnce();
     loop_rate.sleep();
