@@ -26,34 +26,36 @@ double normalizeYaw(double yaw_deg)
     return yaw_deg;
 }
 
-void PID_yaw_control(geometry_msgs::Twist &cmd_vel)
+geometry_msgs::Twist PID_yaw_control(double Kp, double Ki, double Kd)
 {
-    double Kp = 0.02;
-    double Ki = 0.0;
-    double Kd = 0.5;
+    geometry_msgs::Twist cmd_vel;
 
     double yaw_deg = RAD2DEG(yaw);
     yaw_deg = normalizeYaw(yaw_deg);
 
     double error = target_yaw_degree - yaw_deg;
+    double error_sum = 0.0;
     double error_d = error - error_old;
-    double error_sum = error;
+
+    error_sum += error;
 
     double Steering_Angle = Kp * error + Ki * error_sum + Kd * error_d;
 
     cmd_vel.linear.x = 0.5;
     cmd_vel.angular.z = Steering_Angle;
 
-    if (fabs(error) < 0.5) 
+    if (fabs(error) < 0.5)
     {
         cmd_vel.linear.x = 0.0;
         cmd_vel.angular.z = 0.0;
     }
 
     error_old = error;
+
+    return cmd_vel;
 }
 
-void imu1Callback(const sensor_msgs::Imu::ConstPtr& msg) 
+void imu1Callback(const sensor_msgs::Imu::ConstPtr &msg)
 {
     tf2::Quaternion q(
         msg->orientation.x,
@@ -61,7 +63,7 @@ void imu1Callback(const sensor_msgs::Imu::ConstPtr& msg)
         msg->orientation.z,
         msg->orientation.w);
 
-    tf2::Matrix3x3 m(q);      
+    tf2::Matrix3x3 m(q);
     m.getRPY(roll, pitch, yaw);
 
     double yaw_deg = normalizeYaw(RAD2DEG(yaw));
@@ -71,8 +73,6 @@ void imu1Callback(const sensor_msgs::Imu::ConstPtr& msg)
 
 int main(int argc, char **argv)
 {
-    geometry_msgs::Twist cmd_vel;
-
     ros::init(argc, argv, "yaw_control");
     ros::NodeHandle n;
     ros::Subscriber yaw_control_sub = n.subscribe("/imu", 1000, imu1Callback);
@@ -80,11 +80,15 @@ int main(int argc, char **argv)
 
     ros::Rate loop_rate(30.0);
 
+    double Kp = 0.02;
+    double Ki = 0.0;
+    double Kd = 0.5;
+
     int count = 0;
 
     while (ros::ok())
     {
-        PID_yaw_control(cmd_vel);
+        geometry_msgs::Twist cmd_vel = PID_yaw_control(Kp, Ki, Kd);
         yaw_cmd_vel_pub.publish(cmd_vel);
         ros::spinOnce();
         loop_rate.sleep();
