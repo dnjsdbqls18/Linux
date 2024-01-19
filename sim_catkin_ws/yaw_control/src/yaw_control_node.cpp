@@ -10,7 +10,7 @@
 
 double roll, pitch, yaw;
 double error_old = 0.0;
-double target_yaw_degree = 0.0;
+double target_yaw_degree = 160.0;
 
 double normalizeYaw(double yaw_deg)
 {
@@ -34,6 +34,16 @@ geometry_msgs::Twist PID_yaw_control(double Kp, double Ki, double Kd)
     yaw_deg = normalizeYaw(yaw_deg);
 
     double error = target_yaw_degree - yaw_deg;
+
+    if (error > 180)
+    {
+        error = error - 360;
+    }
+    else if (error < -180)
+    {
+        error = error + 360;
+    }
+
     double error_sum = 0.0;
     double error_d = error - error_old;
 
