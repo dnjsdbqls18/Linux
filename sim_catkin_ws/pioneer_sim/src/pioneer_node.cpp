@@ -34,15 +34,6 @@ void threshold(double tsl1401cl_data[], int ThresholdData[], int tsl1401cl_size,
     }
 }
 
-void tsl1401cl_Callback(const std_msgs::Float32MultiArray::ConstPtr &msg)
-{
-    for (int i = 0; i < TSL1401CL_SIZE; i++)
-    {
-        tsl1401cl_data[i] = msg->data[i];
-    }
-    threshold(tsl1401cl_data, LineSensor_threshold_Data, TSL1401CL_SIZE, THRESHOLD);
-}
-
 double find_line_center()
 {
     double centroid = 0.0;
@@ -62,6 +53,26 @@ double find_line_center()
     centroid = centroid / mass_sum;
 
     return centroid;
+}
+
+void tsl1401cl_Callback(const std_msgs::Float32MultiArray::ConstPtr &msg)
+{
+    for (int i = 0; i < TSL1401CL_SIZE; i++)
+    {
+        tsl1401cl_data[i] = msg->data[i];
+    }
+    threshold(tsl1401cl_data, LineSensor_threshold_Data, TSL1401CL_SIZE, THRESHOLD);
+    
+    printf("Threshold Data: \n");
+
+    for (int i = 0; i < TSL1401CL_SIZE; i++)
+    {
+        printf("%d ", LineSensor_threshold_Data[i]);
+    }
+    printf("\n");
+
+    double centroid = find_line_center();
+    printf("Line Centroid: %f\n", centroid);
 }
 
 double error_lane_old = 0.0;
@@ -86,20 +97,6 @@ geometry_msgs::Twist PID_lane_control(double Kp_lane, double Ki_lane, double Kd_
     error_lane_old = error_lane;
 
     return cmd_vel;
-}
-
-void print_lane()
-{
-    printf("Threshold Data: \n");
-
-    for (int i = 0; i < TSL1401CL_SIZE; i++)
-    {
-        printf("%d ", LineSensor_threshold_Data[i]);
-    }
-    printf("\n");
-
-    double centroid = find_line_center();
-    printf("Line Centroid: %f\n", centroid);
 }
 
 ///////////// SONAR /////////////
@@ -262,7 +259,6 @@ int main(int argc, char **argv)
 
     while (ros::ok())
     {
-        print_lane();
         find_line_center();
 
         switch (mission_flag)
@@ -338,6 +334,7 @@ int main(int argc, char **argv)
             }
             else
             {
+				Kp_lane = 0.0017;
                 cmd_vel = PID_lane_control(Kp_lane, Ki_lane, Kd_lane);
             }
             break;
