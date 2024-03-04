@@ -1,0 +1,13 @@
+<launch>
+
+	<node pkg = "waypoint_control_system" type = "waypoint_control_system_node" name = "waypoint_control_system" output = "screen">
+	
+	<param name = "poseupdate_topic" 				type = "string"      value = "/poseupdate"/>
+	<param name = "type_cmd_vel_topic" 				type = "string"      value = "/type_cmd_vel"/>
+	<param name = "waypoint_file_path" 				type = "string"      value = "/home/amap/sim_catkin_ws/src/waypoint_control_system/data/waypoint1.txt"/>
+
+	<!--<param name = "K_xte" 							type = "double"      value = "0.2"/>-->
+
+	</node>
+	
+</launch>
