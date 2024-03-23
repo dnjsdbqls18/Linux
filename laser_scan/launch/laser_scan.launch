@@ -1,0 +1,10 @@
+<launch>
+
+	<node pkg = "laser_scan" type = "laser_scan_node" name = "laser_scan" output = "screen">
+	
+    <param name = "laser_scan_topic" 		type = "string"      value = "/scan"/>;
+    <param name = "ROI_file" 				type = "string"      value = "/home/amap/sim_catkin_ws/src/Lidar/laser_scan/src/ROI.txt"/>;      
+
+	</node>
+	
+</launch>
