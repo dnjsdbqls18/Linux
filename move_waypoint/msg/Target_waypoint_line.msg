@@ -1,2 +1,0 @@
-geometry_msgs/Pose2D waypoint_start_pose2d
-geometry_msgs/Pose2D waypoint_target_pose2d
