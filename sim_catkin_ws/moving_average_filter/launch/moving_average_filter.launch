@@ -1,0 +1,10 @@
+<launch>
+	<node pkg = "moving_average_filter" type = "moving_average_filter_node" name = "moving_average_filter" output = "screen">
+	
+	<param name = "front_sonar_topic" 			type = "string"      value = "/range_front"/>   
+	<param name = "left_sonar_topic" 			type = "string"      value = "/range_front_left"/>
+	<param name = "right_sonar_topic" 			type = "string"      value = "/range_front_right"/>  
+	<param name = "sonar_cmd_vel_topic" 		type = "string"      value = "/cmd_vel/sonar"/> 
+	
+	</node>
+</launch>
