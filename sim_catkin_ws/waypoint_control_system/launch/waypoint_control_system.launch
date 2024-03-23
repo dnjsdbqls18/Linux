@@ -1,0 +1,17 @@
+<launch>
+
+	<node pkg = "waypoint_control_system" type = "waypoint_control_system_node" name = "waypoint_control_system" output = "screen">
+	
+	<param name = "poseupdate_topic" 				type = "string"      value = "/poseupdate"/>
+	<param name = "waypoint_file_path" 				type = "string"      value = "/home/amap/sim_catkin_ws/src/waypoint_control_system/data/waypoint2.txt"/>
+	<param name = "status_waypoint_move_topic"    	type = "string"      value = "/status/waypoint_move"/>
+	<param name = "target_waypoint_line_topic" 		type = "string"      value = "/target_waypoint_line"/>
+	<param name = "waypoint_start_id_topic" 		type = "string"      value = "/start_waypoint_id_no"/>
+	<param name = "waypoint_finish_id_topic" 		type = "string"      value = "/finish_waypoint_id_no"/>
+	<param name = "waypoint_run_command_topic" 		type = "string"      value = "/flag/robot_run"/>
+
+	<!--<param name = "K_xte" 							type = "double"      value = "0.2"/>-->
+
+	</node>
+	
+</launch>
