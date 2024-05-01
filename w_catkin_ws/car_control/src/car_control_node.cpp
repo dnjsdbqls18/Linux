@@ -17,6 +17,7 @@
 #define SLAVE_ADDRESS 0x05 // 아두이노의 I2C 주소
 
 //static const char *deviceName = "/dev/i2c-0";
+unsigned char protocol_data[7] = {'#',0,0,0,0,0,'*'}; // start byte '#' - end bytte '*'
 
 #define RAD2DEG(x) ((x)*180./M_PI)
 #define DEG2RAD(x) ((x)/180.*M_PI)
@@ -129,7 +130,17 @@ int main(int argc, char **argv)
         ros::spinOnce();
         loop_rate.sleep();
     }
-
+    /*
+    protocol_data[0] = '#';  
+	protocol_data[1] = 'C'; 
+    protocol_data[2] = (steering_angle&0xff00)>>8 ;
+	protocol_data[3] = (steering_angle&0x00ff);
+	protocol_data[4] = (car_speed&0xff00)>>8 ;
+	protocol_data[5] = (car_speed&0x00ff);
+	protocol_data[6] = '*';
+	write(file_I2C, protocol_data, 7);
+	read(file_I2C,buf,8);
+	*/
     // Close the I2C device
     close_I2C(file_I2C);
 
