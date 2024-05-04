@@ -31,13 +31,13 @@ union
 {
 	short steering_angle_data;
 	char angle_byte[2];
-}Steering;
+} Steering;
 
 union 
 {
 	int speed_data;
 	char speed_byte[2];
-}Car_Speed;
+} Car_Speed;
 
 int file_I2C;
 
@@ -99,7 +99,7 @@ void cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg)
 		linear_data = Min_Car_Speed;
 	}
 
-    c.speed_data = (short)linear_data;
+    Car_Speed.speed_data = (short)linear_data;
     
     if(angular_data <= Max_R_Angle)  
     {
@@ -110,7 +110,7 @@ void cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg)
 		angular_data = Max_L_Angle;
 	}
 	  
-    s.steering_angle_data  = (short)angular_data;
+    Steering.steering_angle_data  = (short)angular_data;
 }
 
 int main(int argc, char **argv)
@@ -151,18 +151,18 @@ int main(int argc, char **argv)
     {
 		protocol_data[0] = '#';
 		protocol_data[1] = 'C';
-		protocol_data[2] = s.angle_byte[0];
-		protocol_data[3] = s.angle_byte[1];
-		protocol_data[4] = c.speed_byte[0];
-		protocol_data[5] = c.speed_byte[1];
+		protocol_data[2] = Steering.angle_byte[0];
+		protocol_data[3] = Steering.angle_byte[1];
+		protocol_data[4] = Car_Speed.speed_byte[0];
+		protocol_data[5] = Car_Speed.speed_byte[1];
 		protocol_data[6] = 0;  
 		protocol_data[7] = 0;    
 		protocol_data[8] = '*';
 		
 		write(file_I2C, protocol_data, 9);
 	
-		printf("car_speed : %d\n", c.speed_data);
-		printf("steering_angle : %d \n\n", s.steering_angle_data);
+		printf("car_speed : %d\n", Car_Speed.speed_data);
+		printf("steering_angle : %d \n\n", Steering.steering_angle_data);
 		
         ros::spinOnce();
         loop_rate.sleep();
@@ -171,26 +171,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp: In function ‘void cmd_vel_Callback(const ConstPtr&)’:
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:102:5: error: ‘c’ was not declared in this scope
-     c.speed_data = (short)linear_data;
-     ^
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:113:5: error: ‘s’ was not declared in this scope
-     s.steering_angle_data  = (short)angular_data;
-     ^
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp: In function ‘int main(int, char**)’:
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:154:22: error: ‘s’ was not declared in this scope
-   protocol_data[2] = s.angle_byte[0];
-                      ^
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:156:22: error: ‘c’ was not declared in this scope
-   protocol_data[4] = c.speed_byte[0];
-                      ^
-car_control/CMakeFiles/car_control_node.dir/build.make:62: recipe for target 'car_control/CMakeFiles/car_control_node.dir/src/car_control_node.cpp.o' failed
-make[2]: *** [car_control/CMakeFiles/car_control_node.dir/src/car_control_node.cpp.o] Error 1
-CMakeFiles/Makefile2:479: recipe for target 'car_control/CMakeFiles/car_control_node.dir/all' failed
-make[1]: *** [car_control/CMakeFiles/car_control_node.dir/all] Error 2
-Makefile:140: recipe for target 'all' failed
-make: *** [all] Error 2
-Invoking "make -j4 -l4" failed
-
-
