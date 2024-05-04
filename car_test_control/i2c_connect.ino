@@ -1,103 +1,3 @@
-#include <Wire.h>
-#include <Servo.h>
-
-#define SLAVE_ADDRESS 0x05
-
-#define NEUTRAL_ANGLE 90
-#define RC_SERVO_PIN   2
-
-#define encodPinA1   2
-#define encodPinB1   3
-#define MOTOR_DIR    4
-#define MOTOR_PWM    5
-
-int Steering_Angle = 0;
-Servo Steeringservo;
-
-union 
-{
-  short data;
-  byte bytes[2];
-} car_speed, car_servo;
-
-void setup() 
-{
-  #if FASTADC
-  sbi(ADCSRA, ADPS2);
-  cbi(ADCSRA, ADPS1);
-  cbi(ADCSRA, ADPS0);
-  
-  #endif
-  pinMode(MOTOR_DIR, OUTPUT);
-  pinMode(MOTOR_PWM, OUTPUT);
-  
-  Wire.begin(SLAVE_ADDRESS);
-  Wire.onReceive(receiveData);
-  
-  Serial.begin(115200);
-  Steeringservo.attach(RC_SERVO_PIN);   
-}
-
-void motor_control(int speed)
-{
-  if (speed >= 0) 
-  {
-    digitalWrite(MOTOR_DIR, LOW);
-    analogWrite(MOTOR_PWM, speed);
-  }
-  else 
-  {
-    digitalWrite(MOTOR_DIR, HIGH);
-    analogWrite(MOTOR_PWM, -speed);
-  }
-  Serial.print("speed: ");
-  Serial.println(speed);
-  Serial.println();    
-}
-
-void loop() 
-{
-  delay(100);
-}
-
-void receiveData(int byteCount) 
-{
-  if (Wire.available() >= 9) 
-  {
-    byte receivedData[9];
-    for (int i = 0; i < 9; i++) 
-    {
-      receivedData[i] = Wire.read(); 
-    }
-
-    if (receivedData[0] == '#' && receivedData[1] == 'C' && receivedData[8] == '*') 
-    {
-      car_servo.bytes[0] = receivedData[2];
-      car_servo.bytes[1] = receivedData[3];
-      short angle = car_servo.data;
-
-      car_speed.bytes[0] = receivedData[4];
-      car_speed.bytes[1] = receivedData[5];
-      float speed = car_speed.data;
-      
-      Steeringservo.write(NEUTRAL_ANGLE + angle);
-  
-      Serial.print("angle_offset: ");
-      Serial.println(angle);
-      Serial.print("angle: ");
-      Serial.println(NEUTRAL_ANGLE + angle);
-      Serial.println();
-      delay(1000);
-      
-      motor_control(speed);
-    } 
-    else 
-    {
-      Serial.println("Invalid protocol");
-    }
-  }
-}
-
 #include "ros/ros.h"
 #include "std_msgs/Int8.h"
 #include "std_msgs/Float32.h"
@@ -125,8 +25,7 @@ void receiveData(int byteCount)
 #define Max_Car_Speed  255
 #define Min_Car_Speed  -255
 
-//static const char *deviceName = "/dev/i2c-0";
-unsigned char protocol_data[9] = {'#','C',0,0,0,0,0,0,'*'}; // start byte '#' - end bytte '*'
+unsigned char protocol_data[9] = {'#','C',0,0,0,0,0,0,'*'}; // 시작 바이트 '#' - 끝 바이트 '*'
 
 union Steering
 {
@@ -152,16 +51,16 @@ int open_I2C(void)
     // I2C 장치 열기
     if ((file = open(deviceName, O_RDWR)) < 0) 
     {
-        fprintf(stderr, "Failed to access %s\n", deviceName);
+        fprintf(stderr, "%s에 접근 실패\n", deviceName);
         exit(1);
     }
-    printf("I2C: Connected\n");
+    printf("I2C: 연결됨\n");
 
     // I2C 장치와 통신 설정
-    printf("I2C: acquiring bus to 0x%x\n", SLAVE_ADDRESS);
+    printf("I2C: 0x%x에 대한 버스 획득\n", SLAVE_ADDRESS);
     if (ioctl(file, I2C_SLAVE, SLAVE_ADDRESS) < 0) 
     {
-        fprintf(stderr, "I2C: Failed to acquire bus access/talk to slave 0x%x\n", SLAVE_ADDRESS);
+        fprintf(stderr, "I2C: 버스 접근/스레이브 0x%x에 대한 통신 실패\n", SLAVE_ADDRESS);
         exit(1);
     }
 
@@ -190,8 +89,8 @@ void cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg)
 	double linear_data;
     double angular_data;
    
-    linear_data  = cmd_vel.linear.x ;
-    angular_data = cmd_vel.angular.z ;
+    linear_data  = msg->linear.x ;
+    angular_data = msg->angular.z ;
 
     if(linear_data >=  Max_Car_Speed)
     {
@@ -202,7 +101,7 @@ void cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg)
 		linear_data = Min_Car_Speed;
 	}
 
-    c.data = (short)linear_data;
+    c.speed_data = (short)linear_data;
     
     if(angular_data <= Max_R_Angle)  
     {
@@ -213,7 +112,7 @@ void cmd_vel_Callback(const geometry_msgs::Twist::ConstPtr& msg)
 		angular_data = Max_L_Angle;
 	}
 	  
-    s.data  = (short)angular_data;
+    s.steering_angle_data  = (short)angular_data;
 }
 
 int main(int argc, char **argv)
@@ -242,30 +141,30 @@ int main(int argc, char **argv)
     file_I2C = open_I2C();
     if(file_I2C < 0)
     {
-         printf("Unable to open I2C");
+         printf("I2C를 열 수 없습니다.");
         return -1;
     }
     else
     {
-        printf("I2C is Connected");
+        printf("I2C가 연결되었습니다.");
     }
 
     while (ros::ok())
     {
-		protocal_data[0] = '#';
-		protocal_data[1] = 'C';
-		protocal_data[2] = s.angle_byte[0];
-		protocal_data[3] = s.angle_byte[1];
-		protocal_data[4] = c.speed_byte[0];
-		protocal_data[5] = c.speed_byte[1];
-		protocal_data[6] = 0;  
-		protocal_data[7] = 0;    
-		protocal_data[8] = '*';
+		protocol_data[0] = '#';
+		protocol_data[1] = 'C';
+		protocol_data[2] = s.angle_byte[0];
+		protocol_data[3] = s.angle_byte[1];
+		protocol_data[4] = c.speed_byte[0];
+		protocol_data[5] = c.speed_byte[1];
+		protocol_data[6] = 0;  
+		protocol_data[7] = 0;    
+		protocol_data[8] = '*';
 		
-		write(file_I2C, protocal_data, 9);
+		write(file_I2C, protocol_data, 9);
 	
-		printf("car_speed : %d\n", s.angle_byte);
-		printf("steering_angle : %d \n\n", c.speed_byte);
+		printf("car_speed : %d\n", c.speed_data);
+		printf("steering_angle : %d \n\n", s.steering_angle_data);
         ros::spinOnce();
         loop_rate.sleep();
     }
@@ -273,35 +172,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp: In function ‘void cmd_vel_Callback(const ConstPtr&)’:
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:93:20: error: ‘cmd_vel’ was not declared in this scope
-     linear_data  = cmd_vel.linear.x ;
-                    ^~~~~~~
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:105:7: error: ‘union Car_Speed’ has no member named ‘data’
-     c.data = (short)linear_data;
-       ^~~~
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:116:7: error: ‘union Steering’ has no member named ‘data’
-     s.data  = (short)angular_data;
-       ^~~~
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp: In function ‘int main(int, char**)’:
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:155:3: error: ‘protocal_data’ was not declared in this scope
-   protocal_data[0] = '#';
-   ^~~~~~~~~~~~~
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:155:3: note: suggested alternative: ‘protocol_data’
-   protocal_data[0] = '#';
-   ^~~~~~~~~~~~~
-   protocol_data
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:167:42: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘char*’ [-Wformat=]
-   printf("car_speed : %d\n", s.angle_byte);
-                                          ^
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:168:50: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘char*’ [-Wformat=]
-   printf("steering_angle : %d \n\n", c.speed_byte);
-                                                  ^
-car_control/CMakeFiles/car_control_node.dir/build.make:62: recipe for target 'car_control/CMakeFiles/car_control_node.dir/src/car_control_node.cpp.o' failed
-make[2]: *** [car_control/CMakeFiles/car_control_node.dir/src/car_control_node.cpp.o] Error 1
-CMakeFiles/Makefile2:479: recipe for target 'car_control/CMakeFiles/car_control_node.dir/all' failed
-make[1]: *** [car_control/CMakeFiles/car_control_node.dir/all] Error 2
-Makefile:140: recipe for target 'all' failed
-make: *** [all] Error 2
-Invoking "make -j4 -l4" failed
