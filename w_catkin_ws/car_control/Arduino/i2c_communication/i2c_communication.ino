@@ -16,13 +16,13 @@ Servo Steeringservo;
 
 union 
 {
-  short steering_angle_data;
+  int steering_angle_data;
   byte angle_byte[2];
 } Steering;
 
 union 
 {
-  int speed_data;
+  float speed_data;
   byte speed_byte[2];
 } Car_Speed;
 
