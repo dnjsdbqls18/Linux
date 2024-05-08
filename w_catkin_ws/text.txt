@@ -1,0 +1,106 @@
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/i2c-dev.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#define SLAVE_ADDRESS 0x05
+
+int file_I2C;
+
+int open_I2C(void) 
+{
+    int file;
+    const char *deviceName = "/dev/i2c-0"; // 사용할 I2C 장치 파일
+
+    // I2C 장치 열기
+    if ((file = open(deviceName, O_RDWR)) < 0) 
+    {
+        fprintf(stderr, "%s에 접근 실패\n", deviceName);
+        exit(1);
+    }
+    printf("I2C: 연결됨\n");
+
+    // I2C 장치와 통신 설정
+    printf("I2C: 0x%x에 대한 버스 획득\n", SLAVE_ADDRESS);
+    if (ioctl(file, I2C_SLAVE, SLAVE_ADDRESS) < 0) 
+    {
+        fprintf(stderr, "I2C: 버스 접근/스레이브 0x%x에 대한 통신 실패\n", SLAVE_ADDRESS);
+        exit(1);
+    }
+
+    return file;
+}
+
+void close_I2C(int fd)
+{
+   close(fd);
+}
+
+long read_encoderPos(int fd)
+{
+    unsigned char buffer[2];
+    long encoderPos;
+
+    if (read(fd, buffer, 2) != 2) 
+    {
+        fprintf(stderr, "I2C: 데이터 읽기 실패\n");
+        return -1;
+    } 
+    else 
+    {
+        encoderPos = buffer[0] << 8 | buffer[1];
+        return encoderPos;
+    }
+}
+
+int main(int argc, char **argv)
+{
+    int count = 0;
+
+    ros::init(argc, argv, "car_control");
+    ros::NodeHandle nh;
+
+    // 다른 부분 생략...
+
+    file_I2C = open_I2C();
+    if (file_I2C < 0) 
+    {
+        printf("I2C를 열 수 없습니다.");
+        return -1;
+    } 
+    else 
+    {
+        printf("I2C가 연결되었습니다.");
+    }
+
+    while (ros::ok()) 
+    {
+        protocol_data[0] = '#';
+        protocol_data[1] = 'C';
+        protocol_data[2] = Steering.angle_byte[0];
+        protocol_data[3] = Steering.angle_byte[1];
+        protocol_data[4] = Car_Speed.speed_byte[0];
+        protocol_data[5] = Car_Speed.speed_byte[1];
+        protocol_data[6] = 0;
+        protocol_data[7] = 0;
+        protocol_data[8] = '*';
+
+        write(file_I2C, protocol_data, 9);
+
+        printf("steering_angle : %d \n", Steering.steering_angle_data);
+        printf("car_speed : %d\n\n", Car_Speed.speed_data);
+
+        encoderPos = read_encoderPos(file_I2C);
+        if (encoderPos != -1) 
+        {
+            printf("encoderPos: %ld\n", encoderPos); // 엔코더 값 출력
+        }
+
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
+
+    return 0;
+}
