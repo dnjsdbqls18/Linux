@@ -26,7 +26,7 @@
 #define Min_Car_Speed  -255
 
 unsigned char protocol_data[9] = {'#','C',0,0,0,0,0,0,'*'}; // 시작 바이트 '#' - 끝 바이트 '*'
-int encoderPos_data[1] = {0}; // 시작 바이트 '#' - 끝 바이트 '*'
+unsigned char encoderPos_data[7] = {0}; // 시작 바이트 '#' - 끝 바이트 '*'
 
 union 
 {
@@ -39,6 +39,12 @@ union
     int speed_data;
     char speed_byte[2];
 } Car_Speed;
+
+union
+{
+	float encoderPos_data;
+	char encoder_byte[4];
+} EncoderPos;
 
 int file_I2C;
 
@@ -121,7 +127,6 @@ int read_encoderPos(int fd)
     read(encoderPos)
 }
 */
-int encoderPos[1];
 
 int main(int argc, char **argv)
 {
@@ -174,12 +179,17 @@ int main(int argc, char **argv)
         printf("steering_angle : %d \n", Steering.steering_angle_data);
         printf("car_speed : %d\n\n", Car_Speed.speed_data);
 
-		//encoderPos_data[0] = encoderPos[0];
-		//read(file_I2C,encoderPos_data,1);
-		read(file_I2C,encoderPos,1);
+		read(file_I2C,encoderPos_data,6);
+		if((encoderPos_data[0] == 'D') && (encoderPos_data[5] == '*')) 
+		{
+			EncoderPos.encoder_byte[1] = encoderPos_data[1];
+			EncoderPos.encoder_byte[2] = encoderPos_data[2];
+			EncoderPos.encoder_byte[3] = encoderPos_data[3];
+			EncoderPos.encoder_byte[4] = encoderPos_data[4];
+		}
 		//encoderPos[0]=encoderPos_data[0];
 
-        printf("encoderPos : %d\n\n", encoderPos[0]);
+        printf("encoderPos : %lf\n\n", EncoderPos.encoderPos_data);
 		
         ros::spinOnce();
         loop_rate.sleep();
