@@ -26,7 +26,7 @@
 #define Min_Car_Speed  -255
 
 unsigned char protocol_data[9] = {'#','C',0,0,0,0,0,0,'*'}; // 시작 바이트 '#' - 끝 바이트 '*'
-unsigned char encoderPos_data[1] = {0}; // 시작 바이트 '#' - 끝 바이트 '*'
+int encoderPos_data[1] = {0}; // 시작 바이트 '#' - 끝 바이트 '*'
 
 union 
 {
@@ -174,10 +174,12 @@ int main(int argc, char **argv)
         printf("steering_angle : %d \n", Steering.steering_angle_data);
         printf("car_speed : %d\n\n", Car_Speed.speed_data);
 
-		encoderPos_data[0] = encoderPos[0];
+		//encoderPos_data[0] = encoderPos[0];
+		//read(file_I2C,encoderPos_data,1);
+		read(file_I2C,encoderPos,1);
+		//encoderPos[0]=encoderPos_data[0];
 
-		read(file_I2C,&encoderPos_data,1);
-        printf("encoderPos : %d\n\n", encoderPos);
+        printf("encoderPos : %d\n\n", encoderPos[0]);
 		
         ros::spinOnce();
         loop_rate.sleep();
@@ -186,10 +188,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-Scanning dependencies of target car_control_node
-[ 50%] Building CXX object car_control/CMakeFiles/car_control_node.dir/src/car_control_node.cpp.o
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp: In function ‘int main(int, char**)’:
-/home/amap/w_catkin_ws/src/car_control/src/car_control_node.cpp:180:49: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘int*’ [-Wformat=]
-         printf("encoderPos : %d\n\n", encoderPos);
-              
