@@ -1,160 +1,60 @@
-//opencv_line_detect.cpp
-//-I/usr/local/include/opencv4/opencv -I/usr/local/include/opencv4
+amap@aMAP:~/w_catkin_ws$ cmw
+Base path: /home/amap/w_catkin_ws
+Source space: /home/amap/w_catkin_ws/src
+Build space: /home/amap/w_catkin_ws/build
+Devel space: /home/amap/w_catkin_ws/devel
+Install space: /home/amap/w_catkin_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/amap/w_catkin_ws/build"
+####
+-- Using CATKIN_DEVEL_PREFIX: /home/amap/w_catkin_ws/devel
+-- Using CMAKE_PREFIX_PATH: /home/amap/catkin_ws/devel;/opt/ros/melodic
+-- This workspace overlays: /home/amap/catkin_ws/devel;/opt/ros/melodic
+-- Found PythonInterp: /usr/bin/python2 (found suitable version "2.7.17", minimum required is "2") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python2
+-- Using Debian Python package layout
+-- Using empy: /usr/bin/empy
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /home/amap/w_catkin_ws/build/test_results
+-- Found gtest sources under '/usr/src/googletest': gtests will be built
+-- Found gmock sources under '/usr/src/googletest': gmock will be built
+-- Found PythonInterp: /usr/bin/python2 (found version "2.7.17") 
+-- Using Python nosetests: /usr/bin/nosetests-2.7
+-- catkin 0.7.29
+-- BUILD_SHARED_LIBS is on
+-- BUILD_SHARED_LIBS is on
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 2 packages in topological order:
+-- ~~  - car_control
+-- ~~  - jetson_camera_rp_v2
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- +++ processing catkin package: 'car_control'
+-- ==> add_subdirectory(car_control)
+CMake Warning at /opt/ros/melodic/share/catkin/cmake/catkin_package.cmake:166 (message):
+  catkin_package() DEPENDS on 'system_lib' but neither
+  'system_lib_INCLUDE_DIRS' nor 'system_lib_LIBRARIES' is defined.
+Call Stack (most recent call first):
+  /opt/ros/melodic/share/catkin/cmake/catkin_package.cmake:102 (_catkin_package)
+  car_control/CMakeLists.txt:27 (catkin_package)
 
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
+
+-- +++ processing catkin package: 'jetson_camera_rp_v2'
+-- ==> add_subdirectory(jetson_camera_rp_v2)
+CMake Error at /opt/ros/melodic/share/cv_bridge/cmake/cv_bridgeConfig.cmake:113 (message):
+  Project 'cv_bridge' specifies '/usr/include/opencv' as an include dir,
+  which is not found.  It does neither exist as an absolute directory nor in
+  '${{prefix}}//usr/include/opencv'.  Check the issue tracker
+  'https://github.com/ros-perception/vision_opencv/issues' and consider
+  creating a ticket if the problem has not been reported yet.
+Call Stack (most recent call first):
+  /opt/ros/melodic/share/catkin/cmake/catkinConfig.cmake:76 (find_package)
+  jetson_camera_rp_v2/CMakeLists.txt:15 (find_package)
 
 
-using namespace cv;
-using namespace std;
-
-#define IMG_Width     1280
-#define IMG_Height    720
-
-#define USE_DEBUG  0   // 1 Debug  사용
-#define USE_CAMERA 1   // 1 CAMERA 사용  0 CAMERA 미사용
-
-#define DEG2RAD(x) (M_PI/180.0)*x
-#define RAD2DEG(x) (180.0/M_PI)*x
-
-std::string gstreamer_pipeline (int capture_width, int capture_height, int display_width, int display_height, int framerate, int flip_method) {
-    return "nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(capture_width) + ", height=(int)" +
-           std::to_string(capture_height) + ", format=(string)NV12, framerate=(fraction)" + std::to_string(framerate) +
-           "/1 ! nvvidconv flip-method=" + std::to_string(flip_method) + " ! video/x-raw, width=(int)" + std::to_string(display_width) + ", height=(int)" +
-           std::to_string(display_height) + ", format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
-}
-
-
-Mat mat_image_org_color;  // Image 저장하기 위한 변수
-
-
-int img_width = 640;
-int img_height = 640;
-
-Mat Region_of_Interest(Mat image, Point *points)
-{
-  Mat img_mask =Mat::zeros(image.rows,image.cols,CV_8UC1);	 
-  
-  Scalar mask_color = Scalar(255,255,255);
-  const Point* pt[1]={ points };	    
-  int npt[] = { 4 };
-  cv::fillPoly(img_mask,pt,npt,1,Scalar(255,255,255),LINE_8);
-  Mat masked_img;	
-  bitwise_and(image,img_mask,masked_img);
-  
-  return masked_img;
-}
-
-Mat Region_of_Interest_crop(Mat image, Point *points)
-{
-   Mat img_roi_crop;	
-
-   Rect bounds(0,0,image.cols,image.rows);	 
-   Rect r(points[0].x,points[0].y,image.cols, points[2].y-points[0].y);  
-   //printf("%d %d %d %d\n",points[0].x,points[0].y,points[2].x, points[2].y-points[0].y);
-   //printf("%d  %d\n", image.cols, points[2].y-points[0].y);
-
-   img_roi_crop = image(r & bounds);
-   
-   return img_roi_crop;
-}
-
-Mat Canny_Edge_Detection(Mat mat_img)
-{
-  
-   Mat mat_blur_img, mat_canny_img;
-  // blur(img, mat_blur_img, Size(3,3));	
-  // Canny(mat_blur_img,mat_canny_img, 70,170,3);
-	
-   Canny(mat_img,mat_canny_img, 70,170,3);
-   return mat_canny_img;	
-}
-
-int main(int argc, char **argv)
-{
-     
-   int count;
-   
-   int capture_width = 1280 ;
-   int capture_height = 720 ;
-   int display_width = 640 ;
-   int display_height = 640 ;
-   int framerate = 60 ;
-   int flip_method = 2 ;
-    
-  
-   img_width = 640;
-   img_height = 320;
-   if(USE_CAMERA == 0) 
-   {
-	   img_width = 640;
-	   img_height = 480;	 
-   }
-   
-   std::cout << "OpenCV version : " << CV_VERSION << std::endl;
-  // return 1;
-    
-   std::string pipeline = gstreamer_pipeline(capture_width,
-	capture_height,
-	display_width,
-	display_height,
-	framerate,
-	flip_method);
-    std::cout << "Using pipeline: \n\t" << pipeline << "\n";
- 
-   cv::VideoCapture cap(pipeline, cv::CAP_GSTREAMER);
-   
-  
-   if (!cap.isOpened()) 
-   {
-	cerr << "에러 - 카메라를 열 수 없습니다.\n";		
-	return -1;	
-   }
-   
-   cap.read(mat_image_org_color);
-   img_width = mat_image_org_color.size().width ;
-   img_height = mat_image_org_color.size().height;
-	
-   if(USE_CAMERA == 0) printf("Image size[%3d,%3d]\n", img_width,img_height);	
-  
-  
-   ros::init(argc, argv, "ros_camera_image_topic_pub");
-  /**
-   * NodeHandle is the main access point to communications with the ROS system.
-   * The first NodeHandle constructed will fully initialize this node, and the last
-   * NodeHandle destructed will close down the node.
-   */
-   ros::NodeHandle nh;
-   image_transport::ImageTransport it(nh);
-   image_transport::Publisher image_pub = it.advertise("camera/image1", 1);     
-   
-   
-   ros::Rate loop_rate(60);
- 
-   sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", mat_image_org_color).toImageMsg();
-
-    
-   while (ros::ok())
-   { 
-    /**
-     * This is a message object. You stuff it with data, and then publish it.
-     */
-     if(USE_CAMERA == 1)  cap.read(mat_image_org_color);
-     else                 mat_image_org_color = imread("./img/line_1.jpg", IMREAD_COLOR);
-     
-     img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", mat_image_org_color).toImageMsg();
-     image_pub.publish(img_msg);
-     
-     ros::spinOnce();
-
-     loop_rate.sleep();
-     ++count;
-  }
-
-  
-   return 0;
-}
-
- 
+-- Configuring incomplete, errors occurred!
+See also "/home/amap/w_catkin_ws/build/CMakeFiles/CMakeOutput.log".
+See also "/home/amap/w_catkin_ws/build/CMakeFiles/CMakeError.log".
+Makefile:684: recipe for target 'cmake_check_build_system' failed
+make: *** [cmake_check_build_system] Error 1
+Invoking "make cmake_check_build_system" failed
