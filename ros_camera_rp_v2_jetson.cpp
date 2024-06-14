@@ -1,3 +1,5 @@
+https://docs.google.com/presentation/d/1vv8gjh-sBEEZSCdgwTLIr1p9vjWBXut0/edit#slide=id.p5
+
 //opencv_line_detect.cpp
 //-I/usr/local/include/opencv4/opencv -I/usr/local/include/opencv4
 
