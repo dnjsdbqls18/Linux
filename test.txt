@@ -1,7 +1,3 @@
-#define LEFT    -1
-#define CENTER   0
-#define RIGHT    1
-
 #include <ros/ros.h>
 #include "std_msgs/String.h"
 #include "std_msgs/Bool.h"
@@ -20,7 +16,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <numeric>  // 추가된 헤더 파일
+#include <numeric>
 
 using namespace cv;
 using namespace std;
@@ -28,13 +24,13 @@ using namespace std;
 #define IMG_Width     640
 #define IMG_Height    360
 
-#define USE_DEBUG  1   // 1 디버그 사용
-#define USE_CAMERA 1   // 1 카메라 사용, 0 카메라 미사용
+#define USE_DEBUG  1   // 디버그 사용
+#define USE_CAMERA 1   // 카메라 사용
 
 #define NO_LINE 300
 #define MAX_STEER_ANGLE  30
 
-Mat mat_image_org_color;  // 이미지 저장 변수
+Mat mat_image_org_color;  // 원본 이미지 저장 변수
 Mat mat_image_org_color_crop;
 Mat mat_image_org_gray;
 Mat mat_image_roi_crop;
@@ -59,7 +55,7 @@ int canney_high  = 170;
 
 //////////////////////////////////////// PID 제어 ////////////////////////////////////////////////
 
-bool   lane_control_run_set = false;//
+bool   lane_control_run_set = false;
 bool   avoid_control_enable_flag = false;
 bool   stop_flag = false;
 int    car_avoid_steer_direction = CENTER;
@@ -69,41 +65,42 @@ double vision_xte_offset = 0.0;
 
 struct Rect_Region
 {
-	int left;
-	int right;
-	int top;
-	int bottom;
+    int left;
+    int right;
+    int top;
+    int bottom;
 };
 
 struct Rect_Region ROI_lane;
 
 void avoid_control_enable_Callback(const std_msgs::Bool& msg)
 {
-	avoid_control_enable_flag = msg.data;
+    avoid_control_enable_flag = msg.data;
 }
 
 void car_avoid_steer_directoin_Callback(const std_msgs::Int8& msg)
 {
-	car_avoid_steer_direction = msg.data;
+    car_avoid_steer_direction = msg.data;
 }
 
 void stop_flag_Callback(const std_msgs::Bool& msg)
 {
-	stop_flag = msg.data;
+    stop_flag = msg.data;
 }
 
 void CamImageCallback(const sensor_msgs::Image::ConstPtr& msg)
 {
+    // 이미지 처리 함수
 }
 
 void vision_xte_offset_topic_Callback(const std_msgs::Float32& msg)
 {
-	vision_xte_offset = msg.data;
+    vision_xte_offset = msg.data;
 }
 
 void run_lane_control_flagCallback(const std_msgs::Bool& msg)
 {
-	lane_control_run_set = msg.data;
+    lane_control_run_set = msg.data;
 }
 
 Mat Region_of_Interest(Mat image, Point* points)
@@ -112,7 +109,7 @@ Mat Region_of_Interest(Mat image, Point* points)
     Scalar mask_color = Scalar(255, 255, 255);
     const Point* pt[1] = { points };
     int npt[] = { 4 };
-    cv::fillPoly(img_mask, pt, npt, 1, Scalar(255, 255, 255), LINE_8);
+    fillPoly(img_mask, pt, npt, 1, Scalar(255, 255, 255), LINE_8);
     Mat masked_img;
     bitwise_and(image, img_mask, masked_img);
     return masked_img;
@@ -139,238 +136,109 @@ Mat Canny_Edge_Detection(Mat img)
 
 double line_blob_detection(Mat mat_img_crop)
 {
-	int max_area   = -1;
-	int max_area_i = -1;
-	cvtColor(mat_img_crop, mat_image_roi_gray, cv::COLOR_RGB2GRAY);
-	erode(mat_image_roi_threshold, mat_image_roi_threshold, Mat::ones(Size(3,3),CV_8UC1),Point(-1,-1),1);
-	Mat img_labels,stats, centroids;
-	int numOfLables = connectedComponentsWithStats(mat_image_roi_threshold, img_labels, stats, centroids, 8,CV_32S);
-	for (int i = 1; i < numOfLables; i++)
-	{
-		 int left  = stats.at<int>(i,CC_STAT_LEFT);
-		 int width = stats.at<int>(i,CC_STAT_WIDTH);
-		 int area  = stats.at<int>(i,CC_STAT_AREA);
-		 if(area > max_area)
-		 {
-			max_area   = area;
-			max_area_i = i;
-		 }
-	}
-	if(max_area_i != -1)
-	{
-		double x = centroids.at<double>(max_area_i, 0);
-		double y = centroids.at<double>(max_area_i, 1);
-		printf("최대 블롭 위치 : [%4.1lf ,%4.1lf]\n", x,y);
-		return x;
-	}
-	else
-	{
-		return -1;
-	}
+    int max_area   = -1;
+    int max_area_i = -1;
+    Mat mat_image_roi_gray;
+    cvtColor(mat_img_crop, mat_image_roi_gray, COLOR_BGR2GRAY);
+    Mat mat_image_roi_threshold;
+    threshold(mat_image_roi_gray, mat_image_roi_threshold, 100, 255, THRESH_BINARY);
+
+    erode(mat_image_roi_threshold, mat_image_roi_threshold, Mat::ones(Size(3,3),CV_8UC1),Point(-1,-1),1);
+
+    Mat img_labels,stats, centroids;
+    int numOfLables = connectedComponentsWithStats(mat_image_roi_threshold, img_labels, stats, centroids, 8, CV_32S);
+
+    for (int i = 1; i < numOfLables; i++)
+    {
+        int area  = stats.at<int>(i, CC_STAT_AREA);
+        if(area > max_area)
+        {
+            max_area   = area;
+            max_area_i = i;
+        }
+    }
+
+    if(max_area_i != -1)
+    {
+        double x = centroids.at<double>(max_area_i, 0);
+        double y = centroids.at<double>(max_area_i, 1);
+        printf("최대 블롭 위치 : [%4.1lf ,%4.1lf]\n", x, y);
+        return x;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
 int main(int argc, char** argv)
 {
-	/////////////////// 카메라 이미지는 640x360으로 고정 (Jetson Nano) ////////////////////////
+    ros::init(argc, argv, "ros_lane_control");
+    ros::NodeHandle nh;
 
-	int i;
+    ros::Subscriber image_sub                       = nh.subscribe("/usb_cam/image_raw", 1, &CamImageCallback);
+    ros::Subscriber run_lane_control_flag_sub       = nh.subscribe("/flag/lane_control_set", 1, &run_lane_control_flagCallback);
+    ros::Subscriber cmd_vel_vision_xte__sub         = nh.subscribe("/xte/vision_offset", 1, &vision_xte_offset_topic_Callback);
+    ros::Subscriber avoid_control_enable_sub        = nh.subscribe("/flag/avoid_control_lane_enable", 1, &avoid_control_enable_Callback);
+    ros::Subscriber stop_flag_sub                   = nh.subscribe("/vision/stop_line_detect_flag", 1, &stop_flag_Callback);
+    ros::Subscriber car_avoid_steer_directoin_sub   = nh.subscribe("/flag/car_avoid_steer_direction", 1, &car_avoid_steer_directoin_Callback);
 
-	double gradient[NO_LINE]        = { 0, };
-	double intersect_x[NO_LINE]     = { 0, };
-	double intersect_left[NO_LINE]  = { 0, };
-	double intersect_right[NO_LINE] = { 0, };
-
-	double c_x_sum = 0;
-
-	int capture_width  = 640; 
-	int capture_height = 360;
-	int display_width  = 640;
-	int display_height = 360;
-	int framerate     = 60;
-	int flip_method   = 2;
-	int left_line_no  = 0;
-	int right_line_no = 0;
-
-	double  c[NO_LINE] = { 0.0, };
-	double  d[NO_LINE] = { 0.0, };
-
-	double  valid_c[NO_LINE] = { 0.0, };
-	double  valid_d[NO_LINE] = { 0.0, };
-
-	double  line_left_x  = 0.0;
-	double  line_right_x = 0.0;
-
-	double steer_angle_old, steer_angle_new;
-	double *euclidean_distance_matrix; 
-	double line_center = -1;
-
-	int perspective_upper = 137;
-	int perspective_lower = 319;
-
-	steer_angle_old =  steer_angle_new = 0.0;
-	ros::init(argc, argv, "ros_lane_control");
-
-	ros::NodeHandle nh;
-
-	int img_width  = 640;
-	int img_height = 360;
-
-	std::string input_image_topic           = "/usb_cam/image_raw";
-	std::string vision_xte_offset_topic     = "/vision_xte_offset";
-	std::string vision_xte_topic            = "/vision_xte";
-	std::string speed_topic                 = "/Car_Control_cmd/Speed_Int16";
-
-	ros::param::get("~input_image_topic",input_image_topic);
-	ros::param::get("~img_width",     img_width);
-	ros::param::get("~img_height",    img_height);
-	ros::param::get("~ROI_CENTER_Y",  ROI_CENTER_Y);
-	ros::param::get("~ROI_WIDTH",     ROI_WIDTH);
-	ros::param::get("~perspective_upper",     perspective_upper);
-	ros::param::get("~perspective_lower",     perspective_lower);
-	ros::param::get("~lane_width",    lane_width);
-	ros::param::get("~canney_low",    canney_low);
-	ros::param::get("~canney_high" ,  canney_high);
-	ros::param::get("~vision_xte_topic",vision_xte_topic);
-	ros::param::get("~vision_xte_offset_topic",vision_xte_offset_topic);
-
-    ros::Subscriber image_sub                       = nh.subscribe(input_image_topic, 1, &CamImageCallback);
-	ros::Subscriber run_lane_control_flag_sub       = nh.subscribe("/flag/lane_control_set",1, &run_lane_control_flagCallback);
-	ros::Subscriber cmd_vel_vision_xte__sub         = nh.subscribe(vision_xte_offset_topic,1, &vision_xte_offset_topic_Callback);
-	ros::Subscriber avoid_control_enable_sub        = nh.subscribe("/flag/avoid_control_lane_enable",1, &avoid_control_enable_Callback);
-	ros::Subscriber stop_flag_sub                   = nh.subscribe("/vision/stop_line_detect_flag",1,&stop_flag_Callback);
-	ros::Subscriber car_avoid_steer_directoin_sub   = nh.subscribe("/flag/car_avoid_steer_direction",1, &car_avoid_steer_directoin_Callback);
     ros::Publisher pub_steerAngle = nh.advertise<std_msgs::Int16>("/manual_control/steering", 10);
 
-	ROS_INFO("Manual Control steering Angle Publishing Start");
+    ROS_INFO("Manual Control steering Angle Publishing Start");
 
-	ros::Rate loop_rate(10);
-	while (ros::ok()) {
-		if (lane_control_run_set) 
-		{
-			Point pts[4] = 
-			{
-					Point(0, perspective_upper),
-					Point(img_width, perspective_upper),
-					Point(img_width, perspective_lower),
-					Point(0, perspective_lower)
-			};
-			Point pts1[4] = 
-			{
-					Point(ROI_CENTER_Y - ROI_WIDTH, perspective_upper),
-					Point(ROI_CENTER_Y + ROI_WIDTH, perspective_upper),
-					Point(ROI_CENTER_Y + ROI_WIDTH, perspective_lower),
-					Point(ROI_CENTER_Y - ROI_WIDTH, perspective_lower)
-			};
-			Point pts2[4] = 
-			{
-					Point(0, perspective_upper),
-					Point(img_width, perspective_upper),
-					Point(img_width, perspective_lower),
-					Point(0, perspective_lower)
-			};
-			Point pts3[4] = 
-			{
-					Point(0, 0),
-					Point(img_width, 0),
-					Point(img_width, img_height),
-					Point(0, img_height)
-			};
+    ros::Rate loop_rate(10);
+    while (ros::ok())
+    {
+        if (lane_control_run_set)
+        {
+            Point pts1[4] =
+            {
+                Point(ROI_CENTER_Y - ROI_WIDTH, 137),
+                Point(ROI_CENTER_Y + ROI_WIDTH, 137),
+                Point(ROI_CENTER_Y + ROI_WIDTH, 319),
+                Point(ROI_CENTER_Y - ROI_WIDTH, 319)
+            };
 
-			Mat mask(img_height, img_width, CV_8UC3, Scalar::all(0));
-			Mat mask1(img_height, img_width, CV_8UC3, Scalar::all(0));
-			Mat mask2(img_height, img_width, CV_8UC3, Scalar::all(0));
-			Mat mask3(img_height, img_width, CV_8UC3, Scalar::all(0));
-			Mat mask4(img_height, img_width, CV_8UC3, Scalar::all(0));
+            mat_image_org_color_crop = Region_of_Interest_crop(mat_image_org_color, pts1);
 
-			fillConvexPoly(mask, pts, 4, Scalar(255, 0, 0), LINE_AA);
-			fillConvexPoly(mask1, pts1, 4, Scalar(255, 0, 0), LINE_AA);
-			fillConvexPoly(mask2, pts2, 4, Scalar(255, 0, 0), LINE_AA);
-			fillConvexPoly(mask3, pts3, 4, Scalar(255, 0, 0), LINE_AA);
+            if (!mat_image_org_color_crop.empty())
+            {
+                mat_image_org_gray = Canny_Edge_Detection(mat_image_org_color_crop);
 
-			mat_image_org_color.copyTo(mat_image_org_color_crop, mask3);
-			mat_image_org_color_crop = Region_of_Interest_crop(mat_image_org_color, pts1);
+                Mat mat_image_roi_crop = Region_of_Interest(mat_image_org_color, pts1);
 
-			if (!mat_image_org_color_crop.empty()) 
-			{
-				mat_image_org_gray = Canny_Edge_Detection(mat_image_org_color_crop);
+                if (!mat_image_roi_crop.empty())
+                {
+                    double x_position = line_blob_detection(mat_image_roi_crop);
 
-				mat_image_roi_crop = Region_of_Interest(mat_image_org_color, pts1);
-				
-				if (!mat_image_roi_crop.empty()) 
-				{
-					double x_position = line_blob_detection(mat_image_roi_crop);
+                    double relative_x_position = (IMG_Width / 2) - x_position;
+                    double angle = atan2(relative_x_position, IMG_Width * 3) * 180 / CV_PI;
 
-					double relative_x_position = 0.0;
-					double angle;
-					relative_x_position = (IMG_Width / 2) - x_position;
-					angle = atan2(relative_x_position, IMG_Width * 3) * 180 / 3.14159265;
+                    ROS_INFO("angle : [%lf]", angle);
 
-					ROS_INFO("angle : [%lf]", angle);
-					std_msgs::Int16 msg_steerAngle;
+                    std_msgs::Int16 msg_steerAngle;
+                    msg_steerAngle.data = angle;
+                    pub_steerAngle.publish(msg_steerAngle);
+                }
+                else
+                {
+                    ROS_INFO("mat_image_roi_crop is empty");
+                }
+            }
+            else
+            {
+                ROS_INFO("mat_image_org_color_crop is empty");
+            }
+        }
+        else
+        {
+            ROS_INFO("Flag is not set");
+        }
 
-					msg_steerAngle.data = angle;
-					pub_steerAngle.publish(msg_steerAngle);
-				} 
-				else 
-				{
-					ROS_INFO("mat_image_roi_crop is empty");
-				}
-			} 
-			else 
-			{
-				ROS_INFO("mat_image_org_color_crop is empty");
-			}
-		}
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
 
-		else 
-		{
-			ROS_INFO("Flag is not set");
-		}
-	}
+    return 0;
 }
-amap@aMAP:~/w_catkin_ws$ roslaunch opencv_line_detection opencv_line_detection.launch
-... logging to /home/amap/.ros/log/ad879c26-2afb-11ef-90aa-1cbfcea1c2e4/roslaunch-aMAP-4443.log
-Checking log directory for disk usage. This may take a while.
-Press Ctrl-C to interrupt
-Done checking log file disk usage. Usage is <1GB.
-
-started roslaunch server http://localhost:34517/
-
-SUMMARY
-========
-
-PARAMETERS
- * /opencv_line_detection/ROI_CENTER_Y: 220
- * /opencv_line_detection/ROI_WIDTH: 50
- * /opencv_line_detection/canney_high: 170
- * /opencv_line_detection/canney_low: 110
- * /opencv_line_detection/cmd_vel_vision_output_topic: /cmd_vel/vision
- * /opencv_line_detection/img_height: 360
- * /opencv_line_detection/img_width: 640
- * /opencv_line_detection/input_image_topic: /camera/image1
- * /opencv_line_detection/lane_width: 560.0
- * /opencv_line_detection/perspective_lower: 370
- * /opencv_line_detection/perspective_upper: 280
- * /opencv_line_detection/vision_xte_offset_topic: /xte/vision_offset
- * /opencv_line_detection/vision_xte_topic: /xte/vision
- * /rosdistro: melodic
- * /rosversion: 1.14.12
-
-NODES
-  /
-    opencv_line_detection (opencv_line_detection/line_detection_node)
-
-ROS_MASTER_URI=http://localhost:11311
-
-process[opencv_line_detection-1]: started with pid [4464]
-[ INFO] [1718462840.152889504]: Manual Control steering Angle Publishing Start
-OpenCV Error: Assertion failed (mask.depth() == CV_8U && (mcn == 1 || mcn == cn)) in copyTo, file /build/opencv-XDqSFW/opencv-3.2.0+dfsg/modules/core/src/copy.cpp, line 347
-terminate called after throwing an instance of 'cv::Exception'
-  what():  /build/opencv-XDqSFW/opencv-3.2.0+dfsg/modules/core/src/copy.cpp:347: error: (-215) mask.depth() == CV_8U && (mcn == 1 || mcn == cn) in function copyTo
-
-[opencv_line_detection-1] process has died [pid 4464, exit code -6, cmd /home/amap/w_catkin_ws/devel/lib/opencv_line_detection/line_detection_node __name:=opencv_line_detection __log:=/home/amap/.ros/log/ad879c26-2afb-11ef-90aa-1cbfcea1c2e4/opencv_line_detection-1.log].
-log file: /home/amap/.ros/log/ad879c26-2afb-11ef-90aa-1cbfcea1c2e4/opencv_line_detection-1*.log
-all processes on machine have died, roslaunch will exit
-shutting down processing monitor...
-... shutting down processing monitor complete
-done
