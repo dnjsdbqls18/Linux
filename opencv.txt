@@ -1,3 +1,4 @@
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/opencv.hpp>
@@ -26,8 +27,8 @@ using namespace std;
 
 Mat cv_image;
 
-int img_width = 320; 
-int img_height = 240; 
+int img_width = 640; 
+int img_height = 360; 
 
 Mat mat_image_org_color;
 Mat mat_image_org_gray;
@@ -139,7 +140,7 @@ void read_pid_gain(void)
 	FILE *fp;
 	int result = 0;
 		
-	fp = fopen("//home//amap//race_data//car_pid_tuning//pid_gain_line_trace.txt","r");
+	fp = fopen("/home/amap/w_catkin_ws/src/opencv_line_detection/pid_gain_line_trace.txt","r");
 	if(fp == NULL) 
 	{
 		ROS_INFO("PID gain File does not exit ~~ \n\n");
@@ -161,7 +162,7 @@ void read_roi_data(void)
 	int result = 0;
 	
 	
-	fp = fopen("//home//amap//race_data//vision_data//vision_roi.txt","r");
+	fp = fopen("/home/amap/w_catkin_ws/src/opencv_line_detection/vision_roi.txt","r");
 	
 	if(fp == NULL) 
 	{
@@ -340,7 +341,7 @@ int main(int argc, char **argv)
 {
     Point points[4];  // ROI(Region of Interest) 
 
-    ros::init(argc, argv, "race_vision");
+    ros::init(argc, argv, "opencv_line_detection");
     ros::NodeHandle nh;
     
 
@@ -357,7 +358,7 @@ int main(int argc, char **argv)
     ros::Duration(0.5).sleep();   // sleep for 0.5 senods
 
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber sub = it.subscribe("/camera/image_raw", 1000, imageCallback);
+    image_transport::Subscriber sub = it.subscribe("/camera/image1", 1000, imageCallback);
 
     ros::Subscriber sub_rng = nh.subscribe("/range", 1000, rangeCallback);
     
