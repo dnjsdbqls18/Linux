@@ -448,3 +448,101 @@ int main(int argc, char** argv)
 	</node>   
 </launch>
 
+amap@aMAP:~/w_catkin_ws$ cmw
+Base path: /home/amap/w_catkin_ws
+Source space: /home/amap/w_catkin_ws/src
+Build space: /home/amap/w_catkin_ws/build
+Devel space: /home/amap/w_catkin_ws/devel
+Install space: /home/amap/w_catkin_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/amap/w_catkin_ws/build"
+####
+####
+#### Running command: "make -j4 -l4" in "/home/amap/w_catkin_ws/build"
+####
+[  0%] Built target sensor_msgs_generate_messages_nodejs
+[  0%] Built target roscpp_generate_messages_py
+[  0%] Built target sensor_msgs_generate_messages_py
+[  0%] Built target sensor_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_eus
+[  0%] Built target std_msgs_generate_messages_cpp
+[  0%] Built target rosgraph_msgs_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_py
+[  0%] Built target roscpp_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_nodejs
+[  0%] Built target geometry_msgs_generate_messages_cpp
+[  0%] Built target roscpp_generate_messages_cpp
+[  0%] Built target rosgraph_msgs_generate_messages_py
+[  0%] Built target rosgraph_msgs_generate_messages_nodejs
+[  0%] Built target std_msgs_generate_messages_eus
+[  0%] Built target sensor_msgs_generate_messages_eus
+[  0%] Built target sensor_msgs_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_nodejs
+[  0%] Built target roscpp_generate_messages_eus
+[  0%] Built target std_msgs_generate_messages_py
+[  0%] Built target geometry_msgs_generate_messages_eus
+[  0%] Built target roscpp_generate_messages_nodejs
+Scanning dependencies of target camera_rp_v2_node
+Scanning dependencies of target line_detection_node
+[ 33%] Built target car_control_node
+[ 50%] Building CXX object jetson_camera_rp_v2/CMakeFiles/camera_rp_v2_node.dir/src/ros_camera_rp_v2_jetson.cpp.o
+[ 66%] Building CXX object opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp: In function ‘int main(int, char**)’:
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:350:51: error: ‘accumulate’ is not a member of ‘std’
+      left_line_c = (left_line_no == 0) ? 0 : std::accumulate(gradient, gradient + left_line_no, 0.0) / left_line_no;
+                                                   ^~~~~~~~~~
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:350:51: note: suggested alternatives:
+In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
+                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
+                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+ CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
+                   ^~~~~~~~~~
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:351:51: error: ‘accumulate’ is not a member of ‘std’
+      left_line_d = (left_line_no == 0) ? 0 : std::accumulate(intersect_left, intersect_left + left_line_no, 0.0) / left_line_no;
+                                                   ^~~~~~~~~~
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:351:51: note: suggested alternatives:
+In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
+                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
+                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+ CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
+                   ^~~~~~~~~~
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:366:53: error: ‘accumulate’ is not a member of ‘std’
+      right_line_c = (right_line_no == 0) ? 0 : std::accumulate(gradient, gradient + right_line_no, 0.0) / right_line_no;
+                                                     ^~~~~~~~~~
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:366:53: note: suggested alternatives:
+In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
+                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
+                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+ CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
+                   ^~~~~~~~~~
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:367:53: error: ‘accumulate’ is not a member of ‘std’
+      right_line_d = (right_line_no == 0) ? 0 : std::accumulate(intersect_right, intersect_right + right_line_no, 0.0) / right_line_no;
+                                                     ^~~~~~~~~~
+/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:367:53: note: suggested alternatives:
+In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
+                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
+                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+ CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
+                   ^~~~~~~~~~
+/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
+[ 83%] Linking CXX executable /home/amap/w_catkin_ws/devel/lib/jetson_camera_rp_v2/camera_rp_v2_node
+opencv_line_detection/CMakeFiles/line_detection_node.dir/build.make:62: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o' failed
+make[2]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o] Error 1
+CMakeFiles/Makefile2:1437: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/all' failed
+make[1]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/all] Error 2
+make[1]: *** Waiting for unfinished jobs....
+/usr/bin/ld: warning: libopencv_core.so.3.4, needed by /usr/local/lib/libopencv_videoio.so.3.4.0, may conflict with libopencv_core.so.3.2
+[ 83%] Built target camera_rp_v2_node
+Makefile:140: recipe for target 'all' failed
+make: *** [all] Error 2
+Invoking "make -j4 -l4" failed
