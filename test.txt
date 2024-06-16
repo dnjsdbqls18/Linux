@@ -1,16 +1,38 @@
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:242:88: error: no match for ‘operator=’ (operand types are ‘ros::NodeHandle’ and ‘ros::Subscriber’)
- = nh.subscribe("/flag/car_avoid_steer_direction",1, &car_avoid_steer_directoin_Callback);
-                                                                                        ^
-In file included from /opt/ros/melodic/include/ros/ros.h:45:0,
-                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:5:
-/opt/ros/melodic/include/ros/node_handle.h:166:17: note: candidate: ros::NodeHandle& ros::NodeHandle::operator=(const ros::NodeHandle&)
-     NodeHandle& operator=(const NodeHandle& rhs);
-                 ^~~~~~~~
-/opt/ros/melodic/include/ros/node_handle.h:166:17: note:   no known conversion for argument 1 from ‘ros::Subscriber’ to ‘const ros::NodeHandle&’
-opencv_line_detection/CMakeFiles/line_detection_node.dir/build.make:62: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o' failed
-make[2]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o] Error 1
-CMakeFiles/Makefile2:1437: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/all' failed
-make[1]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/all] Error 2
-Makefile:140: recipe for target 'all' failed
-make: *** [all] Error 2
-Invoking "make -j4 -l4" failed
+amap@aMAP:~/w_catkin_ws/src/opencv_line_detection/launch$ roslaunch opencv_line_detection opencv_line_detection.launch
+... logging to /home/amap/.ros/log/ad879c26-2afb-11ef-90aa-1cbfcea1c2e4/roslaunch-aMAP-2762.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+
+started roslaunch server http://localhost:46077/
+
+SUMMARY
+========
+
+PARAMETERS
+ * /opencv_line_detection/ROI_CENTER_Y: 220
+ * /opencv_line_detection/ROI_WIDTH: 50
+ * /opencv_line_detection/canney_high: 170
+ * /opencv_line_detection/canney_low: 110
+ * /opencv_line_detection/cmd_vel_vision_output_topic: /cmd_vel/vision
+ * /opencv_line_detection/img_height: 360
+ * /opencv_line_detection/img_width: 640
+ * /opencv_line_detection/input_image_topic: /camera/image1
+ * /opencv_line_detection/lane_width: 560.0
+ * /opencv_line_detection/perspective_lower: 370
+ * /opencv_line_detection/perspective_upper: 280
+ * /opencv_line_detection/vision_xte_offset_topic: /xte/vision_offset
+ * /opencv_line_detection/vision_xte_topic: /xte/vision
+ * /rosdistro: melodic
+ * /rosversion: 1.14.12
+
+NODES
+  /
+    opencv_line_detection (opencv_line_detection/opencv_line_detect_image_topic)
+
+ROS_MASTER_URI=http://localhost:11311
+
+ERROR: cannot launch node of type [opencv_line_detection/opencv_line_detect_image_topic]: Cannot locate node of type [opencv_line_detect_image_topic] in package [opencv_line_detection]. Make sure file exists in package path and permission is set to executable (chmod +x)
+No processes to monitor
+shutting down processing monitor...
+... shutting down processing monitor complete
