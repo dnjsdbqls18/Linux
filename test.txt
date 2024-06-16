@@ -1,0 +1,63 @@
+#include <ros/ros.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+using namespace std;
+
+#define IMG_Width     1280
+#define IMG_Height    720
+
+#define USE_DEBUG  0   // 1 Debug 사용
+#define USE_CAMERA 1   // 1 CAMERA 사용 0 CAMERA 미사용
+
+#define DEG2RAD(x) (M_PI/180.0)*x
+#define RAD2DEG(x) (180.0/M_PI)*x
+
+std::string gstreamer_pipeline(int capture_width, int capture_height, int display_width, int display_height, int framerate, int flip_method) 
+{
+    return "nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(capture_width) + ", height=(int)" + std::to_string(capture_height) + ", format=(string)NV12, framerate=(fraction)" + std::to_string(framerate) +
+           "/1 ! nvvidconv flip-method=" + std::to_string(flip_method) + " ! video/x-raw, width=(int)" + std::to_string(display_width) + ", height=(int)" + std::to_string(display_height) + ", format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
+}
+
+int main() 
+{
+    int capture_width = 1280;
+    int capture_height = 720;
+    int display_width = 640;
+    int display_height = 640;
+    int framerate = 60;
+    int flip_method = 2;
+
+// 회전 없음 (No rotation)
+// 90도 시계 방향 회전 (Rotate 90 degrees clockwise)
+// 180도 회전 (Rotate 180 degrees)
+// 90도 반시계 방향 회전 (Rotate 90 degrees counter-clockwise)
+// 좌우 반전 (Horizontal flip)
+// 좌우 반전 후 90도 시계 방향 회전 (Horizontal flip and rotate 90 degrees clockwise)
+// 상하 반전 (Vertical flip)
+// 좌우 반전 후 90도 반시계 방향 회전 (Horizontal flip and rotate 90 degrees counter-clockwise)
+
+   Mat frame;
+
+    while (true) 
+   {
+        cap.read(frame);
+
+        if (frame.empty()) 
+        { 
+            cerr << "Error - Blank frame grabbed.\n";
+            break;
+        }
+
+        imshow("Camera Stream", frame);
+
+        if (waitKey(30) >= 0) 
+	{
+            break;
+        }
+    }
+
+    return 0;
+}
