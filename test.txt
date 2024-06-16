@@ -1,6 +1,3 @@
-//opencv_line_detect.cpp
-//-I/usr/local/include/opencv4/opencv -I/usr/local/include/opencv4
-
 #define LEFT    -1
 #define CENTER   0
 #define RIGHT    1
@@ -23,6 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <numeric>  // 추가된 헤더 파일
 
 using namespace cv;
 using namespace std;
@@ -42,7 +40,6 @@ Mat mat_image_org_gray;
 Mat mat_image_roi_crop;
 Mat mat_image_canny_edge;
 Mat mat_image_canny_edge1;
-//Mat mat_image_canny_edge_roi;
 Mat mat_image_roi_gray;
 Mat mat_image_roi_gray_crop;
 Mat mat_image_roi_threshold;
@@ -241,308 +238,82 @@ int main(int argc, char** argv)
 	ros::Subscriber cmd_vel_vision_xte__sub         = nh.subscribe(vision_xte_offset_topic,1, &vision_xte_offset_topic_Callback);
 	ros::Subscriber avoid_control_enable_sub        = nh.subscribe("/flag/avoid_control_lane_enable",1, &avoid_control_enable_Callback);
 	ros::Subscriber stop_flag_sub                   = nh.subscribe("/vision/stop_line_detect_flag",1,&stop_flag_Callback);
-	ros::Subscriber car_avoid_steer_directoin_sub   = nh.subscribe("/Car_Control_Cmd/avoid_direction", 1,&car_avoid_steer_directoin_Callback);
+	ros::Subscriber car_avoid_steer_directoin_sub   = nh
+= nh.subscribe("/flag/car_avoid_steer_direction",1, &car_avoid_steer_directoin_Callback);
+    ros::Publisher pub_steerAngle = nh.advertise<std_msgs::Int16>("/manual_control/steering", 10);
 
-	ros::Publisher speed_pub                        = nh.advertise<std_msgs::Int16>(speed_topic,1);
-	ros::Publisher cross_track_error_pub            = nh.advertise<std_msgs::Float32>(vision_xte_topic,1);
-	ros::Rate loop_rate(20);
+	ROS_INFO("Manual Control steering Angle Publishing Start");
 
-	int count = 0;
-	ROI_lane.left  = 0;
-	ROI_lane.right = img_width -1;
-	ROI_lane.top   = (img_height - perspective_upper)/2;
-	ROI_lane.bottom= (img_height - perspective_lower)/2;
+	ros::Rate loop_rate(10);
+	while (ros::ok()) {
+		if (lane_control_run_set) {
+			Point pts[4] = {
+					Point(0, perspective_upper),
+					Point(img_width, perspective_upper),
+					Point(img_width, perspective_lower),
+					Point(0, perspective_lower)
+			};
+			Point pts1[4] = {
+					Point(ROI_CENTER_Y - ROI_WIDTH, perspective_upper),
+					Point(ROI_CENTER_Y + ROI_WIDTH, perspective_upper),
+					Point(ROI_CENTER_Y + ROI_WIDTH, perspective_lower),
+					Point(ROI_CENTER_Y - ROI_WIDTH, perspective_lower)
+			};
+			Point pts2[4] = {
+					Point(0, perspective_upper),
+					Point(img_width, perspective_upper),
+					Point(img_width, perspective_lower),
+					Point(0, perspective_lower)
+			};
+			Point pts3[4] = {
+					Point(0, 0),
+					Point(img_width, 0),
+					Point(img_width, img_height),
+					Point(0, img_height)
+			};
 
-	while(ros::ok())
-	{
-		if(mat_image_org_color.empty())
-		{
+			Mat mask(img_height, img_width, CV_8UC3, Scalar::all(0));
+			Mat mask1(img_height, img_width, CV_8UC3, Scalar::all(0));
+			Mat mask2(img_height, img_width, CV_8UC3, Scalar::all(0));
+			Mat mask3(img_height, img_width, CV_8UC3, Scalar::all(0));
+			Mat mask4(img_height, img_width, CV_8UC3, Scalar::all(0));
+
+			fillConvexPoly(mask, pts, 4, Scalar(255, 0, 0), LINE_AA);
+			fillConvexPoly(mask1, pts1, 4, Scalar(255, 0, 0), LINE_AA);
+			fillConvexPoly(mask2, pts2, 4, Scalar(255, 0, 0), LINE_AA);
+			fillConvexPoly(mask3, pts3, 4, Scalar(255, 0, 0), LINE_AA);
+
+			mat_image_org_color.copyTo(mat_image_org_color_crop, mask3);
+			mat_image_org_color_crop = Region_of_Interest_crop(mat_image_org_color, pts1);
+
+			if (!mat_image_org_color_crop.empty()) {
+				mat_image_org_gray = Canny_Edge_Detection(mat_image_org_color_crop);
+
+				mat_image_roi_crop = Region_of_Interest(mat_image_org_color, pts1);
+				if (!mat_image_roi_crop.empty()) {
+					double x_position = line_blob_detection(mat_image_roi_crop);
+
+					double relative_x_position = 0.0;
+					double angle;
+					relative_x_position = (IMG_Width / 2) - x_position;
+					angle = atan2(relative_x_position, IMG_Width * 3) * 180 / 3.14159265;
+
+					ROS_INFO("angle : [%lf]", angle);
+					std_msgs::Int16 msg_steerAngle;
+
+					msg_steerAngle.data = angle;
+					pub_steerAngle.publish(msg_steerAngle);
+				} else {
+					ROS_INFO("mat_image_roi_crop is empty");
+				}
+			} else {
+				ROS_INFO("mat_image_org_color_crop is empty");
+			}
+
 			ros::spinOnce();
 			loop_rate.sleep();
-			++count;
-			continue;
+		} else {
+			ROS_INFO("Flag is not set");
 		}
-
-		if(lane_control_run_set)
-		{
-			if(stop_flag)
-			{
-				std_msgs::Int16 speed_msg;
-				speed_msg.data = 0;
-				speed_pub.publish(speed_msg);
-				printf("정지 신호 발견!!\n");
-			}
-			else if(avoid_control_enable_flag)
-			{
-				std_msgs::Int16 speed_msg;
-				speed_msg.data = 0;
-				speed_pub.publish(speed_msg);
-				printf("회피 제어 신호 발견\n");
-			}
-			else
-			{
-				mat_image_org_color.copyTo(mat_image_org_color_crop);
-				Point points[4];
-				points[0] = Point(0, (img_height - perspective_upper)/2);
-				points[1] = Point(0, (img_height - perspective_lower)/2);
-				points[2] = Point(img_width, (img_height - perspective_lower)/2);
-				points[3] = Point(img_width, (img_height - perspective_upper)/2);
-
-				mat_image_roi_crop = Region_of_Interest_crop(mat_image_org_color, points);
-				mat_image_canny_edge = Canny_Edge_Detection(mat_image_roi_crop);
-
-				vector<Vec4i> linesP;
-				HoughLinesP(mat_image_canny_edge, linesP, 1, CV_PI/180, 30, 30, 20);
-				printf("검출된 직선 개수 : %3ld \n", linesP.size());
-
-				int j = 0;
-				for( i = 0; i < linesP.size(); i++ )
-				{
-					Vec4i L = linesP[i];
-					double dx, dy;
-
-					dx = L[2] - L[0];
-					dy = L[3] - L[1];
-					if (dx == 0)
-					{
-						continue;
-					}
-					double c1 = dy / dx; 
-					double d1 = L[0]; 
-
-					if(fabs(c1) < 0.5)
-					{
-						continue;
-					}
-
-					gradient[j] = c1; 
-					intersect_x[j] = d1;
-
-					Point pt1(L[0], L[1]);
-					Point pt2(L[2], L[3]);
-					line(mat_image_roi_crop, pt1, pt2, Scalar(255, 0, 0), 1, LINE_AA);
-					j++;
-				}
-
-				left_line_no = 0;
-				right_line_no = 0;
-				double left_line_c = 0;
-				double left_line_d = 0;
-				double right_line_c = 0;
-				double right_line_d = 0;
-
-				for(i = 0; i < j; i++)
-				{
-					if(gradient[i] < 0)
-					{
-						intersect_left[left_line_no] = intersect_x[i];
-						left_line_no++;
-					}
-					else
-					{
-						intersect_right[right_line_no] = intersect_x[i];
-						right_line_no++;
-					}
-				}
-
-				if(left_line_no > 0)
-				{
-					left_line_c = (left_line_no == 0) ? 0 : std::accumulate(gradient, gradient + left_line_no, 0.0) / left_line_no;
-					left_line_d = (left_line_no == 0) ? 0 : std::accumulate(intersect_left, intersect_left + left_line_no, 0.0) / left_line_no;
-					double y1 = 10;
-					double x1 = left_line_c * y1 + left_line_d;
-					double y2 = ROI_WIDTH * 2 - 10;
-					double x2 = left_line_c * y2 + left_line_d;
-					line(mat_image_roi_crop, Point(x1, y1), Point(x2, y2), Scalar(0, 255, 255), 2, LINE_AA);
-					double y3 = (double)ROI_WIDTH;
-					double x3 = left_line_c * y3 + left_line_d;
-					printf("왼쪽 선 : x3, y3 | %5.1lf  %5.1lf %5.1lf  %5.1lf  \n", x3, y3, left_line_c, left_line_d);
-					circle(mat_image_roi_crop, Point(x3, y3), 5, Scalar(0, 255, 255), -1);
-					line_left_x = x3;
-				}
-
-				if(right_line_no > 0)
-				{
-					right_line_c = (right_line_no == 0) ? 0 : std::accumulate(gradient, gradient + right_line_no, 0.0) / right_line_no;
-					right_line_d = (right_line_no == 0) ? 0 : std::accumulate(intersect_right, intersect_right + right_line_no, 0.0) / right_line_no;
-					double y1 = 10;
-					double x1 = right_line_c * y1 + right_line_d;
-					double y2 = ROI_WIDTH * 2 - 10;
-					double x2 = right_line_c * y2 + right_line_d;
-					line(mat_image_roi_crop, Point(x1, y1), Point(x2, y2), Scalar(255, 0, 255), 2, LINE_AA);
-					double y3 = (double)ROI_WIDTH;
-					double x3 = right_line_c * y3 + right_line_d;
-					printf("오른쪽 선 : x3, y3 | %5.1lf  %5.1lf %5.1lf  %5.1lf  \n", x3, y3, right_line_c, right_line_d);
-					circle(mat_image_roi_crop, Point(x3, y3), 5, Scalar(255, 0, 255), -1);
-					line_right_x = x3;
-				}
-
-				if(left_line_no != 0 && right_line_no != 0)
-				{
-					line_center = (line_left_x + line_right_x) / 2.0;
-					c_x_sum = line_center - img_width / 2.0;
-				}
-				else if(left_line_no != 0 && right_line_no == 0)
-				{
-					line_center = line_left_x + lane_width / 2.0;
-					c_x_sum = line_center - img_width / 2.0;
-				}
-				else if(left_line_no == 0 && right_line_no != 0)
-				{
-					line_center = line_right_x - lane_width / 2.0;
-					c_x_sum = line_center - img_width / 2.0;
-				}
-				else
-				{
-					line_center = -1;
-					c_x_sum = 0;
-				}
-
-				printf("차선 중심 : %5.1lf   c_x_sum : %5.1lf \n", line_center, c_x_sum);
-
-				std_msgs::Float32 cross_track_error_msg;
-				cross_track_error_msg.data = c_x_sum + vision_xte_offset;
-				cross_track_error_pub.publish(cross_track_error_msg);
-
-				printf("크로스 트랙 에러  : %6.3lf\n", cross_track_error_msg.data);
-				printf("차선 크로스 트랙 오프셋 : %6.3lf\n", vision_xte_offset);
-
-				imshow("ROI 이미지 창", mat_image_roi_crop);
-			}
-		}
-
-		ros::spinOnce();
-		loop_rate.sleep();
-		++count;
 	}
-
-	return 0;
 }
-
-<launch>
-
-   <!-- <node pkg="ros_lane_control" type = "vision_xte_offset.py" name = "vision_xte_offset.py" output="screen"/> -->
-	 <node pkg="aa10_ros_lane_control" type = "aa10_ros_lane_control_node" name = "aa10_ros_lane_control_node" output="screen">
-	
-		
-		<param name= "input_image_topic"                  type = "string"          value = "/camera/image1"/>     <!-- image topic -->
-		<param name= "img_width"                          type = "int"             value = "640"/>                    <!-- image size height -->
-		<param name= "img_height"                         type = "int"             value = "360"/>                    <!-- image size widht -->        
-		<param name= "lane_width"                         type = "double"          value = "560"/>                    <!-- 100 -->
-		
-		<param name= "ROI_CENTER_Y"                       type = "int"             value =  "220"/>                    <!-- ROI center locaton -->          
-		<param name= "ROI_WIDTH"                          type = "int"             value =  "50"/>                    <!-- ROI height size -->  
-		
-		<param name= "perspective_upper"                  type = "int"             value =  "280"/>                   <!-- bird eye roi upper value200 225-->
-		<param name= "perspective_lower"                  type = "int"             value =  "370"/>                   <!-- bird eye roi lower value319 530-->      
-		
-		<param name= "canney_low"                         type = "int"             value =  "110"/>                    <!-- canney edeg parameter  -->
-		<param name= "canney_high"                        type = "int"             value =  "170"/>                   <!-- 90, 170 -->
-		
-		<param name= "cmd_vel_vision_output_topic"        type = "string"          value = "/cmd_vel/vision"/> 
-		
-       
-		<param name= "vision_xte_topic"                   type = "string"          value = "/xte/vision"/>
-		<param name= "vision_xte_offset_topic"            type = "string"          value = "/xte/vision_offset"/> 
-		
-	</node>   
-</launch>
-
-amap@aMAP:~/w_catkin_ws$ cmw
-Base path: /home/amap/w_catkin_ws
-Source space: /home/amap/w_catkin_ws/src
-Build space: /home/amap/w_catkin_ws/build
-Devel space: /home/amap/w_catkin_ws/devel
-Install space: /home/amap/w_catkin_ws/install
-####
-#### Running command: "make cmake_check_build_system" in "/home/amap/w_catkin_ws/build"
-####
-####
-#### Running command: "make -j4 -l4" in "/home/amap/w_catkin_ws/build"
-####
-[  0%] Built target sensor_msgs_generate_messages_nodejs
-[  0%] Built target roscpp_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_lisp
-[  0%] Built target rosgraph_msgs_generate_messages_eus
-[  0%] Built target std_msgs_generate_messages_cpp
-[  0%] Built target rosgraph_msgs_generate_messages_lisp
-[  0%] Built target geometry_msgs_generate_messages_py
-[  0%] Built target roscpp_generate_messages_lisp
-[  0%] Built target geometry_msgs_generate_messages_lisp
-[  0%] Built target geometry_msgs_generate_messages_nodejs
-[  0%] Built target geometry_msgs_generate_messages_cpp
-[  0%] Built target roscpp_generate_messages_cpp
-[  0%] Built target rosgraph_msgs_generate_messages_py
-[  0%] Built target rosgraph_msgs_generate_messages_nodejs
-[  0%] Built target std_msgs_generate_messages_eus
-[  0%] Built target sensor_msgs_generate_messages_eus
-[  0%] Built target sensor_msgs_generate_messages_cpp
-[  0%] Built target std_msgs_generate_messages_lisp
-[  0%] Built target rosgraph_msgs_generate_messages_cpp
-[  0%] Built target std_msgs_generate_messages_nodejs
-[  0%] Built target roscpp_generate_messages_eus
-[  0%] Built target std_msgs_generate_messages_py
-[  0%] Built target geometry_msgs_generate_messages_eus
-[  0%] Built target roscpp_generate_messages_nodejs
-Scanning dependencies of target camera_rp_v2_node
-Scanning dependencies of target line_detection_node
-[ 33%] Built target car_control_node
-[ 50%] Building CXX object jetson_camera_rp_v2/CMakeFiles/camera_rp_v2_node.dir/src/ros_camera_rp_v2_jetson.cpp.o
-[ 66%] Building CXX object opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp: In function ‘int main(int, char**)’:
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:350:51: error: ‘accumulate’ is not a member of ‘std’
-      left_line_c = (left_line_no == 0) ? 0 : std::accumulate(gradient, gradient + left_line_no, 0.0) / left_line_no;
-                                                   ^~~~~~~~~~
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:350:51: note: suggested alternatives:
-In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
-                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
-                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
- CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
-                   ^~~~~~~~~~
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:351:51: error: ‘accumulate’ is not a member of ‘std’
-      left_line_d = (left_line_no == 0) ? 0 : std::accumulate(intersect_left, intersect_left + left_line_no, 0.0) / left_line_no;
-                                                   ^~~~~~~~~~
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:351:51: note: suggested alternatives:
-In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
-                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
-                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
- CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
-                   ^~~~~~~~~~
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:366:53: error: ‘accumulate’ is not a member of ‘std’
-      right_line_c = (right_line_no == 0) ? 0 : std::accumulate(gradient, gradient + right_line_no, 0.0) / right_line_no;
-                                                     ^~~~~~~~~~
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:366:53: note: suggested alternatives:
-In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
-                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
-                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
- CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
-                   ^~~~~~~~~~
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:367:53: error: ‘accumulate’ is not a member of ‘std’
-      right_line_d = (right_line_no == 0) ? 0 : std::accumulate(intersect_right, intersect_right + right_line_no, 0.0) / right_line_no;
-                                                     ^~~~~~~~~~
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:367:53: note: suggested alternatives:
-In file included from /usr/local/include/opencv2/imgproc/imgproc.hpp:48:0,
-                 from /opt/ros/melodic/include/cv_bridge/cv_bridge.h:44,
-                 from /home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:15:
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
- CV_EXPORTS_W void accumulate( InputArray src, InputOutputArray dst,
-                   ^~~~~~~~~~
-/usr/local/include/opencv2/imgproc.hpp:2647:19: note:   ‘cv::accumulate’
-[ 83%] Linking CXX executable /home/amap/w_catkin_ws/devel/lib/jetson_camera_rp_v2/camera_rp_v2_node
-opencv_line_detection/CMakeFiles/line_detection_node.dir/build.make:62: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o' failed
-make[2]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o] Error 1
-CMakeFiles/Makefile2:1437: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/all' failed
-make[1]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/all] Error 2
-make[1]: *** Waiting for unfinished jobs....
-/usr/bin/ld: warning: libopencv_core.so.3.4, needed by /usr/local/lib/libopencv_videoio.so.3.4.0, may conflict with libopencv_core.so.3.2
-[ 83%] Built target camera_rp_v2_node
-Makefile:140: recipe for target 'all' failed
-make: *** [all] Error 2
-Invoking "make -j4 -l4" failed
