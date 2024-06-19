@@ -1,14 +1,158 @@
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:61:36: error: ‘CENTER’ was not declared in this scope
- int    car_avoid_steer_direction = CENTER;
-                                    ^~~~~~
-/home/amap/w_catkin_ws/src/opencv_line_detection/src/opencv_line_detect_image_topic.cpp:61:36: note: suggested alternative: ‘EINTR’
- int    car_avoid_steer_direction = CENTER;
-                                    ^~~~~~
-                                    EINTR
-opencv_line_detection/CMakeFiles/line_detection_node.dir/build.make:62: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o' failed
-make[2]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/src/opencv_line_detect_image_topic.cpp.o] Error 1
-CMakeFiles/Makefile2:1437: recipe for target 'opencv_line_detection/CMakeFiles/line_detection_node.dir/all' failed
-make[1]: *** [opencv_line_detection/CMakeFiles/line_detection_node.dir/all] Error 2
-Makefile:140: recipe for target 'all' failed
-make: *** [all] Error 2
-Invoking "make -j4 -l4" failed
+amap@aMAP:~$ cmw
+Base path: /home/amap/w_catkin_ws
+Source space: /home/amap/w_catkin_ws/src
+Build space: /home/amap/w_catkin_ws/build
+Devel space: /home/amap/w_catkin_ws/devel
+Install space: /home/amap/w_catkin_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/amap/w_catkin_ws/build"
+####
+make: Warning: File 'Makefile' has modification time 2201 s in the future
+make: warning:  Clock skew detected.  Your build may be incomplete.
+####
+#### Running command: "make -j4 -l4" in "/home/amap/w_catkin_ws/build"
+####
+make: Warning: File 'Makefile' has modification time 2201 s in the future
+make[1]: Warning: File 'CMakeFiles/Makefile2' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target roscpp_generate_messages_py
+[  0%] Built target sensor_msgs_generate_messages_nodejs
+[  0%] Built target sensor_msgs_generate_messages_lisp
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+[  0%] Built target sensor_msgs_generate_messages_py
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target std_msgs_generate_messages_cpp
+[  0%] Built target rosgraph_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_eus
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+[  0%] Built target geometry_msgs_generate_messages_py
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target roscpp_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_nodejs
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+[  0%] Built target geometry_msgs_generate_messages_cpp
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target roscpp_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_eus
+[  0%] Built target rosgraph_msgs_generate_messages_nodejs
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+[  0%] Built target rosgraph_msgs_generate_messages_py
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/sensor_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_lisp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/rosgraph_msgs_generate_messages_cpp.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target sensor_msgs_generate_messages_cpp
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+[  0%] Built target rosgraph_msgs_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_lisp
+[  0%] Built target sensor_msgs_generate_messages_eus
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/std_msgs_generate_messages_py.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/roscpp_generate_messages_nodejs.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target std_msgs_generate_messages_nodejs
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+[  0%] Built target roscpp_generate_messages_eus
+[  0%] Built target roscpp_generate_messages_nodejs
+[  0%] Built target std_msgs_generate_messages_py
+make[2]: Warning: File 'line_control/CMakeFiles/line_control_node.dir/flags.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/geometry_msgs_generate_messages_eus.dir/progress.make' has modification time 2201 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[  0%] Built target geometry_msgs_generate_messages_eus
+make[2]: Warning: File 'car_control/CMakeFiles/car_control_node.dir/progress.make' has modification time 2200 s in the future
+make[2]: Warning: File 'camera/CMakeFiles/camera_node.dir/flags.make' has modification time 1048 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'line_control/CMakeFiles/line_control_node.dir/flags.make' has modification time 2200 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/car_control_node.dir/progress.make' has modification time 2200 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'camera/CMakeFiles/camera_node.dir/flags.make' has modification time 1048 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[ 33%] Built target car_control_node
+[ 66%] Built target line_control_node
+[100%] Built target camera_node
+make[1]: warning:  Clock skew detected.  Your build may be incomplete.
+make: warning:  Clock skew detected.  Your build may be incomplete.
