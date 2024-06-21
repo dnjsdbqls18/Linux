@@ -45,6 +45,9 @@ int main(int argc, char **argv) {
             break;
         }
 
+        // 프레임 180도 회전
+        cv::rotate(frame, frame, cv::ROTATE_180);
+
         // OpenCV Mat을 ROS 이미지 메시지로 변환
         msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg();
 
