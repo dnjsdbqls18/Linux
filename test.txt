@@ -1,64 +1,48 @@
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
-
-using namespace cv;
-
-std::string gstreamer_pipeline(int capture_width, int capture_height, int framerate) {
-    return "nvarguscamerasrc ! video/x-raw(memory:NVMM), width=(int)" + std::to_string(capture_width) + ", height=(int)" +
-           std::to_string(capture_height) + ", format=(string)NV12, framerate=(fraction)" + std::to_string(framerate) +
-           "/1 ! nvvidconv ! video/x-raw, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
-}
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "Camera_Pub");
-    ros::NodeHandle nh;
-    image_transport::ImageTransport it(nh);
-    image_transport::Publisher image_pub = it.advertise("/camera/image", 1);
-
-    // 카메라 설정
-    int capture_width = 640;
-    int capture_height = 480;
-    int framerate = 60;
-    std::string pipeline = gstreamer_pipeline(capture_width, capture_height, framerate);
-    std::cout << "Using pipeline: \n\t" << pipeline << "\n";
-
-    cv::VideoCapture cap(pipeline, cv::CAP_GSTREAMER);
-   
-    if (!cap.isOpened()) {
-        ROS_ERROR("Error - Could not open camera.");
-        ros::shutdown();
-        return -1;
-    }
-
-    cv::Mat frame;
-    sensor_msgs::ImagePtr msg;
-
-    ros::Rate loop_rate(60);  // 초당 30프레임으로 설정
-
-    while (ros::ok()) {
-        cap >> frame;  // 카메라로부터 프레임 가져오기
-
-        if (frame.empty()) {
-            ROS_ERROR("Error - Frame is empty.");
-            break;
-        }
-
-        // 프레임 180도 회전
-        cv::rotate(frame, frame, cv::ROTATE_180);
-
-        // OpenCV Mat을 ROS 이미지 메시지로 변환
-        msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg();
-
-        // ROS 이미지 퍼블리싱
-        image_pub.publish(msg);
-
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-
-    cap.release();  // 카메라 해제
-
-    return 0;
-}
+amap@aMAP:~/w_catkin_ws$ cmw
+Base path: /home/amap/w_catkin_ws
+Source space: /home/amap/w_catkin_ws/src
+Build space: /home/amap/w_catkin_ws/build
+Devel space: /home/amap/w_catkin_ws/devel
+Install space: /home/amap/w_catkin_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/amap/w_catkin_ws/build"
+####
+####
+#### Running command: "make -j4 -l4" in "/home/amap/w_catkin_ws/build"
+####
+[  0%] Built target roscpp_generate_messages_py
+[  0%] Built target sensor_msgs_generate_messages_nodejs
+[  0%] Built target sensor_msgs_generate_messages_lisp
+[  0%] Built target sensor_msgs_generate_messages_py
+[  0%] Built target rosgraph_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_eus
+[  0%] Built target geometry_msgs_generate_messages_py
+[  0%] Built target std_msgs_generate_messages_cpp
+[  0%] Built target roscpp_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_nodejs
+[  0%] Built target geometry_msgs_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_cpp
+[  0%] Built target roscpp_generate_messages_cpp
+[  0%] Built target rosgraph_msgs_generate_messages_nodejs
+[  0%] Built target rosgraph_msgs_generate_messages_py
+[  0%] Built target std_msgs_generate_messages_eus
+[  0%] Built target sensor_msgs_generate_messages_eus
+[  0%] Built target sensor_msgs_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_nodejs
+[  0%] Built target roscpp_generate_messages_eus
+make[2]: Warning: File 'line_control/CMakeFiles/line_control_node.dir/depend.make' has modification time 1197 s in the future
+[  0%] Built target std_msgs_generate_messages_py
+[  0%] Built target roscpp_generate_messages_nodejs
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'line_control/CMakeFiles/line_control_node.dir/depend.make' has modification time 1197 s in the future
+[  0%] Built target geometry_msgs_generate_messages_eus
+make[2]: Warning: File 'car_control/CMakeFiles/car_control_node.dir/depend.make' has modification time 1239 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[ 33%] Built target line_control_node
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+make[2]: Warning: File 'car_control/CMakeFiles/car_control_node.dir/depend.make' has modification time 1239 s in the future
+make[2]: warning:  Clock skew detected.  Your build may be incomplete.
+[ 66%] Built target car_control_node
+[100%] Built target camera_node
