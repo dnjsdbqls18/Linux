@@ -1,0 +1,25 @@
+<launch>
+	<node pkg="line_control" type = "line_control_node" name = "line_control_node" output="screen">
+				
+				
+		<param name="line_center_x_offset"           type = "double"          value = "0"/>                       <!-- 이미지 크기 가로 -->
+		<param name="img_width"                      type = "int"             value = "640"/>                       <!-- 이미지 크기 가로 -->
+		<param name="img_height"                     type = "int"             value = "480"/>                       <!-- 이미지 크기 세로 -->        
+		<param name="img_threshold"                  type = "int"             value = "110"/>                       <!-- 이진화 --> 
+	
+		<param name="image_topic"                    type = "string"          value = "/camera/image"/>       <!-- 이미지 크기 가로 -->
+		
+		<param name="amr_vision_run_topic"           type = "string"          value = "/flag/lane_control_run"/>
+		<param name="amr_vision_xte_topic"           type = "string"          value = "/xte/vision"/>
+		
+		
+		<param name="ROI_X_Size"                     type = "int"             value = "150"/>  
+		<param name="ROI_Y_Size"                     type = "int"             value = "80"/>  
+		<param name="ROI_CENTER"                     type = "int"             value = "320"/>  
+				
+		<param name="line_width_min"                 type = "int"             value = "60"/>    
+		<param name="line_width_max"                 type = "int"             value = "80"/>     
+		
+	</node>   
+</launch>
+
