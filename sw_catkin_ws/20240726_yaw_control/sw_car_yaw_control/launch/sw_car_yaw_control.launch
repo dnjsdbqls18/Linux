@@ -1,0 +1,34 @@
+<launch>
+
+	<node pkg="sw_car_yaw_control" type="sw_car_yaw_control_node" name="car_yaw_control_node" output="screen">
+	
+		<param name= "use_imu"                                type = "bool"                value = "true"/>
+		<param name= "yaw_control_steering_output_topic"      type = "string"              value = "/Car_Control_Cmd/steering_control_mode"/>  
+		<param name= "imu_yaw_angle_topic"                    type = "string"              value = "/handsfree/imu/yaw_radian"/>		
+		
+		<param name= "vision_cross_track_error_topic"         type = "string"              value = "/vision_xte"/>		
+		
+		<param name= "yaw_target_topic"                       type = "string"              value = "/Car_Control_Cmd/Target_Angle"/>	    
+	    
+		<param name= "yaw_control_steering_output_topic"      type = "string"              value = "/Car_Control_cmd/SteerAngle_Int16"/> 
+						
+		<param name= "Kp_imu"                                 type = "double"              value = "3.0"/>
+		<param name= "Kd_imu"                                 type = "double"              value = "5.5"/>
+		<param name= "Ki_imu"                                 type = "double"              value = "0.0"/>
+		
+		<param name= "Kp_vision"                              type = "double"              value = "0.06"/>
+		<param name= "Kd_vision"                              type = "double"              value = "0.5"/>
+		<param name= "Ki_vision"                              type = "double"              value = "0.0"/>
+		
+		<param name= "right_angle_max"                        type = "int"                 value = "-25"/>
+		<param name= "left_angle_max"                         type = "int"                 value = " 25"/>
+		
+		<param name= "vision_xte_right_angle_max"             type = "int"                 value = "-15"/>
+		<param name= "vision_xte_left_angle_max"              type = "int"                 value = " 15"/>
+		
+		
+		
+		
+		
+	</node>
+</launch>

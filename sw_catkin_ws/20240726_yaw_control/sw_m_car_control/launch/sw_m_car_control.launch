@@ -1,0 +1,13 @@
+<launch>
+
+
+	<node pkg="sw_m_car_control" type="sw_m_car_serial_control_node" name="sw_m_car_serial_control_node" output="screen">
+		<param name = "com_port"       		 type = "string"     	value = "/dev/ttyUSB0"/>
+		<param name = "m_accleration"        type = "int"	     	value = "1"/>
+		<param name = "m_accleration"        type = "int"   		value = "1"/>
+  
+	</node> 
+  
+  
+  
+</launch>
