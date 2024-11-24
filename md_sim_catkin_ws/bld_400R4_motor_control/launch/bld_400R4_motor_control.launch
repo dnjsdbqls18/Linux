@@ -1,0 +1,5 @@
+<launch>
+    <node pkg = "bld_400R4_motor_control" type = "bld_400R4_motor_control_node" name = "bld_400R4_motor_control_node" output = "screen">
+    
+    </node>
+</launch>
